@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" style="background-color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  
+  <defs>
+    <!-- Frecce -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+    </marker>
+    <marker id="arrow-white" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="white" />
+    </marker>
+    <marker id="arrow-pass" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
+    </marker>
+    <marker id="arrow-block" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+  </defs>
+
+  <text x="450" y="50" font-size="24" font-weight="bold" text-anchor="middle" fill="#1e293b">La Misura Quantistica e il Collasso dello Stato</text>
+  <text x="450" y="75" font-size="16" text-anchor="middle" fill="#64748b">Transizione probabilistica da Stato Diagonale a Stato Verticale</text>
+
+  <!-- ================= INGRESSO: STATO A 45° ================= -->
+  <text x="40" y="240" font-size="16" fill="#1e293b" font-weight="bold">Stato Iniziale |45°⟩</text>
+  <text x="40" y="260" font-size="14" fill="#64748b">Fotone in sovrapposizione</text>
+  
+  <!-- TRIANGOLO CON VETTORE 45° -->
+  <polygon points="150,255 125,300 175,300" fill="#8b5cf6" stroke-linejoin="round" stroke-width="3" stroke="#8b5cf6" />
+  <line x1="140" y1="290" x2="158" y2="272" stroke="white" stroke-width="2.5" marker-end="url(#arrow-white)" />
+  
+  <text x="150" y="330" font-size="14" font-weight="bold" fill="#8b5cf6" text-anchor="middle">Proprietà △</text>
+  
+  <line x1="200" y1="280" x2="330" y2="280" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)" />
+  
+  <!-- ================= APPARATO DI MISURA (0°) ================= -->
+  <rect x="360" y="210" width="50" height="140" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" />
+  <line x1="385" y1="220" x2="385" y2="340" stroke="white" stroke-width="6" stroke-linecap="round" />
+  
+  <text x="385" y="180" font-size="14" text-anchor="middle" fill="#1e293b" font-weight="bold">Analizzatore Verticale</text>
+  <text x="385" y="195" font-size="12" text-anchor="middle" fill="#475569">Cerca la proprietà ◯</text>
+  <text x="385" y="375" font-size="14" text-anchor="middle" fill="#475569" font-weight="bold">Polaroid a 0°</text>
+
+  <!-- ================= BIFORCAZIONE PROBABILISTICA (USCITA) ================= -->
+  <!-- RAMO SUPERIORE: TRASMISSIONE (50%) -->
+  <line x1="430" y1="265" x2="550" y2="180" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow-pass)" />
+  
+  <!-- CERCHIO CON VETTORE VERTICALE IN USCITA -->
+  <circle cx="620" cy="180" r="22" fill="#3b82f6" />
+  <line x1="620" y1="192" x2="620" y2="168" stroke="white" stroke-width="2.5" marker-end="url(#arrow-white)" />
+  
+  <text x="680" y="165" font-size="16" font-weight="bold" fill="#3b82f6">Collasso nello Stato |V⟩</text>
+  <text x="680" y="185" font-size="14" fill="#1e293b">Probabilità: 50% (Regola di Born)</text>
+  <text x="680" y="205" font-size="14" fill="#64748b">Nuova proprietà ◯ acquisita</text>
+
+  <!-- RAMO INFERIORE: ASSORBIMENTO (50%) -->
+  <line x1="430" y1="295" x2="550" y2="380" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow-block)" />
+  
+  <path d="M 605 365 L 635 395 M 635 365 L 605 395" stroke="#ef4444" stroke-width="6" stroke-linecap="round" />
+  
+  <text x="680" y="370" font-size="16" font-weight="bold" fill="#ef4444">Assorbimento del fotone</text>
+  <text x="680" y="390" font-size="14" fill="#1e293b">Probabilità: 50%</text>
+  <text x="680" y="410" font-size="14" fill="#64748b">Distruzione dell'ente quantistico</text>
+
+  <!-- ================= BOX SPIEGAZIONE ================= -->
+  <rect x="40" y="470" width="820" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" />
+  <text x="60" y="500" font-size="14" font-weight="bold" fill="#1e293b">Vantaggio del doppio livello iconografico (Forma + Vettore):</text>
+  <text x="60" y="520" font-size="14" fill="#475569">La misura quantistica costringe il Triangolo a compiere una scelta. L'apparato distrugge l'identità passata</text>
+  <text x="60" y="540" font-size="14" fill="#475569">e il vettore obliquo, forzando il sistema, nel 50% dei casi, a rigenerarsi assumendo un'identità formale e vettoriale</text>
+  <text x="60" y="560" font-size="14" fill="#475569">completamente nuova (il Cerchio con vettore verticale).</text>
+</svg>

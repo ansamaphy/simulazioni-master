@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" style="background-color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  
+  <defs>
+    <!-- Freccia grigia standard -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+    </marker>
+    <!-- Freccia bianca interna per i vettori -->
+    <marker id="arrow-white" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="white" />
+    </marker>
+  </defs>
+
+  <!-- Titolo Generale -->
+  <text x="450" y="50" font-size="24" font-weight="bold" text-anchor="middle" fill="#1e293b">Associazione Iconografica: Stati e Proprietà Quantistiche</text>
+  <text x="450" y="75" font-size="16" text-anchor="middle" fill="#64748b">Identità Topologiche e Direzione del Campo Elettrico</text>
+
+  <!-- ================= SEZIONE 1: ESITO CERTO (TRASMISSIONE 100%) ================= -->
+
+  <!-- ================= ROW 1: STATO VERTICALE ================= -->
+  <text x="40" y="130" font-size="16" fill="#1e293b" font-weight="bold">Stato Verticale |V⟩</text>
+  <text x="40" y="150" font-size="14" fill="#64748b">Luce polarizzata verticalmente</text>
+  
+  <!-- CERCHIO CON VETTORE VERTICALE -->
+  <circle cx="150" cy="180" r="22" fill="#3b82f6" />
+  <line x1="150" y1="192" x2="150" y2="168" stroke="white" stroke-width="2.5" marker-end="url(#arrow-white)" />
+  
+  <line x1="200" y1="180" x2="330" y2="180" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)" />
+  
+  <!-- APPARATO -->
+  <rect x="360" y="110" width="50" height="140" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" />
+  <line x1="385" y1="120" x2="385" y2="240" stroke="white" stroke-width="6" stroke-linecap="round" />
+  <text x="385" y="275" font-size="14" text-anchor="middle" fill="#475569" font-weight="bold">Polaroid a 0°</text>
+
+  <line x1="440" y1="180" x2="570" y2="180" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)" />
+  
+  <!-- CERCHIO CON VETTORE VERTICALE -->
+  <circle cx="620" cy="180" r="22" fill="#3b82f6" />
+  <line x1="620" y1="192" x2="620" y2="168" stroke="white" stroke-width="2.5" marker-end="url(#arrow-white)" />
+  
+  <text x="680" y="175" font-size="16" font-weight="bold" fill="#3b82f6">Proprietà ◯ (Vettore 0°)</text>
+  <text x="680" y="195" font-size="14" fill="#64748b">Esito certo (passano indisturbati)</text>
+
+  <line x1="40" y1="260" x2="860" y2="260" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="6,6" />
+
+  <!-- ================= ROW 2: STATO ORIZZONTALE ================= -->
+  <text x="40" y="300" font-size="16" fill="#1e293b" font-weight="bold">Stato Orizzontale |H⟩</text>
+  <text x="40" y="320" font-size="14" fill="#64748b">Luce polarizzata orizzontalmente</text>
+  
+  <!-- QUADRATO CON VETTORE ORIZZONTALE -->
+  <rect x="128" y="328" width="44" height="44" fill="#ef4444" rx="4" />
+  <line x1="138" y1="350" x2="162" y2="350" stroke="white" stroke-width="2.5" marker-end="url(#arrow-white)" />
+  
+  <line x1="200" y1="350" x2="330" y2="350" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)" />
+  
+  <!-- APPARATO -->
+  <rect x="360" y="280" width="50" height="140" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" />
+  <line x1="365" y1="350" x2="405" y2="350" stroke="white" stroke-width="6" stroke-linecap="round" />
+  <text x="385" y="445" font-size="14" text-anchor="middle" fill="#475569" font-weight="bold">Polaroid a 90°</text>
+
+  <line x1="440" y1="350" x2="570" y2="350" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)" />
+  
+  <!-- QUADRATO CON VETTORE ORIZZONTALE -->
+  <rect x="598" y="328" width="44" height="44" fill="#ef4444" rx="4" />
+  <line x1="608" y1="350" x2="632" y2="350" stroke="white" stroke-width="2.5" marker-end="url(#arrow-white)" />
+  
+  <text x="680" y="345" font-size="16" font-weight="bold" fill="#ef4444">Proprietà □ (Vettore 90°)</text>
+  <text x="680" y="365" font-size="14" fill="#64748b">Esito certo (passano indisturbati)</text>
+
+  <line x1="40" y1="420" x2="860" y2="420" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="6,6" />
+
+  <!-- ================= ROW 3: STATO A 45° (SOVRAPPOSIZIONE) ================= -->
+  <text x="40" y="470" font-size="16" fill="#1e293b" font-weight="bold">Stato Diagonale |45°⟩</text>
+  <text x="40" y="490" font-size="14" fill="#64748b">Stato puro in sovrapposizione</text>
+  
+  <!-- TRIANGOLO CON VETTORE A 45° -->
+  <polygon points="150,495 125,540 175,540" fill="#8b5cf6" stroke-linejoin="round" stroke-width="3" stroke="#8b5cf6" />
+  <line x1="140" y1="530" x2="158" y2="512" stroke="white" stroke-width="2.5" marker-end="url(#arrow-white)" />
+  
+  <line x1="200" y1="520" x2="330" y2="520" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)" />
+  
+  <!-- APPARATO -->
+  <rect x="360" y="450" width="50" height="140" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" />
+  <line x1="365" y1="540" x2="405" y2="500" stroke="white" stroke-width="6" stroke-linecap="round" />
+  <text x="385" y="615" font-size="14" text-anchor="middle" fill="#475569" font-weight="bold">Polaroid a 45°</text>
+
+  <line x1="440" y1="520" x2="570" y2="520" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)" />
+  
+  <!-- TRIANGOLO CON VETTORE A 45° -->
+  <polygon points="620,495 595,540 645,540" fill="#8b5cf6" stroke-linejoin="round" stroke-width="3" stroke="#8b5cf6" />
+  <line x1="610" y1="530" x2="628" y2="512" stroke="white" stroke-width="2.5" marker-end="url(#arrow-white)" />
+  
+  <text x="680" y="515" font-size="16" font-weight="bold" fill="#8b5cf6">Proprietà △ (Vettore 45°)</text>
+  <text x="680" y="535" font-size="14" fill="#64748b">Esito certo (passano indisturbati)</text>
+
+
+  <!-- ================= SEZIONE 2: CASI INCROCIATI ================= -->
+  <line x1="40" y1="620" x2="860" y2="620" stroke="#cbd5e1" stroke-width="2" />
+  
+  <text x="450" y="660" font-size="18" font-weight="bold" text-anchor="middle" fill="#1e293b">Casi Incrociati: Stati Ortogonali (Mutuamente Esclusivi)</text>
+  <text x="450" y="680" font-size="14" text-anchor="middle" fill="#64748b">L'identità geometrica evidenzia l'impossibilità fisica di attraversare l'analizzatore incrociato</text>
+
+  <!-- ================= ROW 4: VERTICALE SU ORIZZONTALE ================= -->
+  <text x="40" y="730" font-size="16" fill="#1e293b" font-weight="bold">Stato Verticale |V⟩</text>
+  <text x="40" y="750" font-size="14" fill="#64748b">Incontra analizzatore orizzontale</text>
+  
+  <!-- CERCHIO CON VETTORE VERTICALE -->
+  <circle cx="150" cy="780" r="22" fill="#3b82f6" />
+  <line x1="150" y1="792" x2="150" y2="768" stroke="white" stroke-width="2.5" marker-end="url(#arrow-white)" />
+  
+  <line x1="200" y1="780" x2="330" y2="780" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)" />
+  
+  <!-- APPARATO -->
+  <rect x="360" y="710" width="50" height="140" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" />
+  <line x1="365" y1="780" x2="405" y2="780" stroke="white" stroke-width="6" stroke-linecap="round" />
+  <text x="385" y="875" font-size="14" text-anchor="middle" fill="#475569" font-weight="bold">Polaroid a 90°</text>
+
+  <line x1="440" y1="780" x2="570" y2="780" stroke="#cbd5e1" stroke-width="2.5" stroke-dasharray="6,6" />
+  <path d="M 605 765 L 635 795 M 635 765 L 605 795" stroke="#ef4444" stroke-width="5" stroke-linecap="round" />
+  
+  <text x="680" y="775" font-size="16" font-weight="bold" fill="#ef4444">Assorbimento Totale</text>
+  <text x="680" y="795" font-size="14" fill="#64748b">Probabilità = 0% (Proiezione nulla)</text>
+
+  <line x1="40" y1="890" x2="860" y2="890" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="6,6" />
+
+  <!-- ================= ROW 5: ORIZZONTALE SU VERTICALE ================= -->
+  <text x="40" y="900" font-size="16" fill="#1e293b" font-weight="bold">Stato Orizzontale |H⟩</text>
+  <text x="40" y="920" font-size="14" fill="#64748b">Incontra analizzatore verticale</text>
+  
+  <!-- QUADRATO CON VETTORE ORIZZONTALE -->
+  <rect x="128" y="928" width="44" height="44" fill="#ef4444" rx="4" />
+  <line x1="138" y1="950" x2="162" y2="950" stroke="white" stroke-width="2.5" marker-end="url(#arrow-white)" />
+  
+  <line x1="200" y1="950" x2="330" y2="950" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrow)" />
+  
+  <!-- APPARATO -->
+  <rect x="360" y="880" width="50" height="140" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" />
+  <line x1="385" y1="890" x2="385" y2="1010" stroke="white" stroke-width="6" stroke-linecap="round" />
+  <text x="385" y="1045" font-size="14" text-anchor="middle" fill="#475569" font-weight="bold">Polaroid a 0°</text>
+
+  <line x1="440" y1="950" x2="570" y2="950" stroke="#cbd5e1" stroke-width="2.5" stroke-dasharray="6,6" />
+  <path d="M 605 935 L 635 965 M 635 935 L 605 965" stroke="#ef4444" stroke-width="5" stroke-linecap="round" />
+  
+  <text x="680" y="945" font-size="16" font-weight="bold" fill="#ef4444">Assorbimento Totale</text>
+  <text x="680" y="965" font-size="14" fill="#64748b">Probabilità = 0% (Proiezione nulla)</text>
+
+</svg>
