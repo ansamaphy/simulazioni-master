@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulazione Polarizzatori</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .filter-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #4a5568;
+            background-color: rgba(160, 174, 192, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .filter-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-image: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 8px,
+                rgba(74, 85, 104, 0.5) 8px,
+                rgba(74, 85, 104, 0.5) 10px
+            );
+            transition: transform 0.3s ease;
+        }
+
+        .photon-beam {
+            position: absolute;
+            height: 8px;
+            background-color: #f6e05e;
+            box-shadow: 0 0 10px #f6e05e, 0 0 20px #ecc94b;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: -1;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+        }
+        
+        .arrow-indicator {
+             position: absolute;
+             width: 2px;
+             height: 100%;
+             background-color: red;
+             z-index: 10;
+        }
+
+        .table-row-highlight {
+            background-color: #d1fae5 !important;
+            transition: background-color 0.5s ease;
+        }
+        
+        table {
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem;
+            text-align: center;
+        }
+        th {
+            background-color: #f8fafc;
+            font-size: 0.875rem;
+            color: #475569;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">Simulatore: Interazione Fotoni e Polaroid</h1>
+        <p class="text-gray-600 mb-8 text-center">Imposta i filtri per riprodurre i casi della "SCHEDA 4". Quando trovi la combinazione esatta, la riga della tabella si compilerà automaticamente!</p>
+
+        <div class="flex flex-col lg:flex-row justify-between items-start gap-8 mb-10">
+            
+            <!-- Controlli -->
+            <div class="w-full lg:w-1/3 bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-inner">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Impostazioni</h2>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fascio Incidente (I₀)</label>
+                    <select id="sourcePol" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" onchange="updateSimulation()">
+                        <option value="V">Verticale (V / 0°)</option>
+                        <option value="H">Orizzontale (O / 90°)</option>
+                        <option value="45">A 45°</option>
+                        <option value="U">Non Polarizzata (U)</option>
+                    </select>
+                </div>
+
+                <div class="mb-6 space-y-4">
+                    <!-- F1 -->
+                    <div class="bg-white p-3 rounded border border-gray-200">
+                        <label class="block text-sm font-bold text-gray-700 flex justify-between mb-2">
+                            <span>Filtro 1 (F1)</span>
+                            <span id="f1Val" class="text-blue-600">45°</span>
+                        </label>
+                        <input type="range" id="f1Angle" min="0" max="90" step="45" value="45" class="w-full" oninput="updateSimulation()">
+                    </div>
+
+                    <!-- F2 -->
+                    <div class="bg-white p-3 rounded border border-gray-200">
+                        <label class="block text-sm font-bold text-gray-700 flex justify-between mb-2">
+                            <span>Filtro 2 (F2)</span>
+                            <span id="f2Val" class="text-blue-600">0° (V)</span>
+                        </label>
+                        <input type="range" id="f2Angle" min="0" max="90" step="45" value="0" class="w-full" oninput="updateSimulation()">
+                    </div>
+
+                    <!-- F3 -->
+                    <div class="bg-white p-3 rounded border border-gray-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-bold text-gray-700">Filtro 3 (F3)</label>
+                            <div class="flex items-center">
+                                <span class="text-xs text-gray-500 mr-2">Attivo</span>
+                                <input type="checkbox" id="f3Active" checked onchange="updateSimulation()" class="leading-tight h-4 w-4 text-blue-600">
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-600 mb-2">
+                            <span>Angolo Asse</span>
+                            <span id="f3Val" class="text-blue-600 font-bold">0° (V)</span>
+                        </div>
+                        <input type="range" id="f3Angle" min="0" max="90" step="45" value="0" class="w-full" oninput="updateSimulation()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualizzazione Banco Ottico & Risultati Diretti -->
+            <div class="w-full lg:w-2/3 flex flex-col gap-6">
+                <!-- Banco Ottico -->
+                <div class="bg-gray-900 rounded-lg p-4 md:p-8 relative flex items-center justify-between overflow-hidden shadow-lg" style="height: 280px;">
+                    <!-- Sorgente -->
+                    <div class="text-center z-10 w-12 md:w-16">
+                        <div class="text-3xl md:text-4xl">🔦</div>
+                        <div class="text-white text-xs mt-2 font-mono" id="sourceLabel">|V⟩</div>
+                    </div>
+
+                    <div class="photon-beam" style="left: 64px; width: calc(25% - 64px);" id="beam0"></div>
+
+                    <!-- F1 -->
+                    <div class="flex flex-col items-center z-10">
+                        <div class="filter-container">
+                            <div class="filter-grid" id="f1Grid"></div>
+                             <div class="arrow-indicator" id="f1Arrow"></div>
+                        </div>
+                        <div class="text-white text-xs md:text-sm mt-2 font-mono">F1 (<span id="f1Display">45</span>°)</div>
+                    </div>
+
+                    <div class="photon-beam" style="left: 25%; width: 25%;" id="beam1"></div>
+
+                    <!-- F2 -->
+                    <div class="flex flex-col items-center z-10">
+                        <div class="filter-container">
+                            <div class="filter-grid" id="f2Grid"></div>
+                             <div class="arrow-indicator" id="f2Arrow"></div>
+                        </div>
+                        <div class="text-white text-xs md:text-sm mt-2 font-mono">F2 (<span id="f2Display">0</span>°)</div>
+                    </div>
+
+                    <div class="photon-beam" style="left: 50%; width: 25%;" id="beam2"></div>
+
+                    <!-- F3 -->
+                    <div class="flex flex-col items-center z-10" id="f3Wrapper">
+                        <div class="filter-container">
+                            <div class="filter-grid" id="f3Grid"></div>
+                             <div class="arrow-indicator" id="f3Arrow"></div>
+                        </div>
+                        <div class="text-white text-xs md:text-sm mt-2 font-mono">F3 (<span id="f3Display">0</span>°)</div>
+                    </div>
+
+                    <div class="photon-beam" style="left: 75%; width: calc(25% - 64px);" id="beam3"></div>
+
+                    <!-- Rilevatore -->
+                    <div class="text-center z-10 w-12 md:w-16">
+                        <div class="text-3xl md:text-4xl">👁️</div>
+                        <div class="text-white text-xs mt-2 font-mono">Ril.</div>
+                    </div>
+                </div>
+
+                <!-- Risultati Matematici -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                        <div class="bg-white p-3 rounded border border-gray-100">
+                            <div class="text-xs text-gray-500 uppercase tracking-wide">Dopo F1</div>
+                            <div class="text-lg font-bold text-gray-800" id="resF1Int">-</div>
+                            <div class="text-xs text-blue-600 mt-1">Prob: <span id="resF1Prob">-</span></div>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-gray-100">
+                            <div class="text-xs text-gray-500 uppercase tracking-wide">Dopo F2</div>
+                            <div class="text-lg font-bold text-gray-800" id="resF2Int">-</div>
+                            <div class="text-xs text-blue-600 mt-1">Prob: <span id="resF2Prob">-</span></div>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-gray-100" id="resF3Box">
+                            <div class="text-xs text-gray-500 uppercase tracking-wide">Dopo F3</div>
+                            <div class="text-lg font-bold text-gray-800" id="resF3Int">-</div>
+                            <div class="text-xs text-blue-600 mt-1">Prob: <span id="resF3Prob">-</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabella Interattiva -->
+        <div class="w-full bg-white border border-gray-300 rounded-lg shadow-sm overflow-hidden mt-4">
+            <div class="bg-gray-800 text-white p-4">
+                <h3 class="text-lg font-bold">Tabella 1 da compilare</h3>
+                <p class="text-sm text-gray-300">Imposta i filtri nel simulatore. Se la combinazione corrisponde a una riga, i risultati si sveleranno automaticamente!</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="w-12">Caso</th>
+                            <th rowspan="2" class="w-24">Pol. Incidente</th>
+                            <th colspan="3" class="bg-gray-100">Direzione permessa Polaroid</th>
+                            <th colspan="6" class="bg-blue-50">Intensità / Probabilità Trasmessa</th>
+                        </tr>
+                        <tr>
+                            <th class="bg-gray-100">F1</th>
+                            <th class="bg-gray-100">F2</th>
+                            <th class="bg-gray-100">F3</th>
+                            <th class="bg-blue-50">Int. F1</th>
+                            <th class="bg-blue-50">Prob. F1</th>
+                            <th class="bg-blue-50">Int. F2</th>
+                            <th class="bg-blue-50">Prob. F2</th>
+                            <th class="bg-blue-50">Int. F3</th>
+                            <th class="bg-blue-50">Prob. F3</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="bg-white">
+                        <!-- Le righe verranno generate da JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dati della tabella (I 18 casi richiesti)
+        const testCases = [
+            { id: 1, src: 'V', f1: 45, f2: 0, f3: 0 },
+            { id: 2, src: 'V', f1: 45, f2: 90, f3: 0 },
+            { id: 3, src: 'V', f1: 45, f2: 0, f3: 90 },
+            { id: 4, src: 'V', f1: 45, f2: 90, f3: 90 },
+            { id: 5, src: 'V', f1: 45, f2: 90, f3: 45 },
+            { id: 6, src: 'V', f1: 45, f2: 0, f3: 45 },
+            { id: 7, src: 'U', f1: 45, f2: 0, f3: 0 },
+            { id: 8, src: 'U', f1: 45, f2: 90, f3: 90 },
+            { id: 9, src: 'U', f1: 45, f2: 0, f3: 0 }, // Duplicato intenzionale della scheda originale
+            { id: 10, src: 'U', f1: 45, f2: 90, f3: 0 },
+            { id: 11, src: 'U', f1: 45, f2: 90, f3: 45 },
+            { id: 12, src: 'U', f1: 45, f2: 0, f3: 45 },
+            { id: 13, src: '45', f1: 90, f2: 0, f3: 45 },
+            { id: 14, src: '45', f1: 0, f2: 90, f3: 45 },
+            { id: 15, src: '45', f1: 0, f2: 45, f3: 90 },
+            { id: 16, src: '45', f1: 0, f2: 45, f3: 0 },
+            { id: 17, src: '45', f1: 90, f2: 45, f3: 0 },
+            { id: 18, src: '45', f1: 90, f2: 45, f3: 90 },
+        ];
+
+        // Funzioni Helper
+        function getAngleName(angle) {
+            if (angle == 0) return "0° (V)";
+            if (angle == 90) return "90° (O)";
+            return angle + "°";
+        }
+        
+        function getAngleShortName(angle) {
+            if (angle == 0) return "Verticale";
+            if (angle == 90) return "Orizzontale";
+            return "45°";
+        }
+
+        function getInitialAngle(sourceStr) {
+            if (sourceStr === 'V') return 0;
+            if (sourceStr === 'H') return 90;
+            if (sourceStr === '45') return 45;
+            return null;
+        }
+
+        function roundProb(val) {
+            return Math.round(val * 1000) / 1000;
+        }
+
+        function formatIntensity(prob, initialSource) {
+            if (prob === 0) return "0";
+            if (prob === 1 && initialSource !== 'U') return "I₀";
+            if (prob === 1 && initialSource === 'U') return "I₀ / 2";
+            if (prob === 0.5) return "I₀ / 2";
+            if (prob === 0.25) return "I₀ / 4";
+            if (prob === 0.125) return "I₀ / 8";
+            return (prob).toFixed(3) + " I₀";
+        }
+
+        // Inizializza Tabella
+        function initTable() {
+            const tbody = document.getElementById('tableBody');
+            testCases.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.id = `row-${c.id}`;
+                tr.innerHTML = `
+                    <td class="font-bold text-gray-500">${c.id}</td>
+                    <td class="font-mono">${c.src === 'H' ? 'O' : c.src}</td>
+                    <td>${getAngleShortName(c.f1)}</td>
+                    <td>${getAngleShortName(c.f2)}</td>
+                    <td>${getAngleShortName(c.f3)}</td>
+                    <td id="r${c.id}-i1" class="text-gray-400">?</td>
+                    <td id="r${c.id}-p1" class="text-gray-400">?</td>
+                    <td id="r${c.id}-i2" class="text-gray-400">?</td>
+                    <td id="r${c.id}-p2" class="text-gray-400">?</td>
+                    <td id="r${c.id}-i3" class="text-gray-400">?</td>
+                    <td id="r${c.id}-p3" class="text-gray-400">?</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateSimulation() {
+            const sourcePol = document.getElementById('sourcePol').value;
+            const f1Angle = parseInt(document.getElementById('f1Angle').value);
+            const f2Angle = parseInt(document.getElementById('f2Angle').value);
+            const f3Active = document.getElementById('f3Active').checked;
+            const f3Angle = parseInt(document.getElementById('f3Angle').value);
+
+            // Aggiorna UI testo controlli
+            document.getElementById('f1Val').innerText = getAngleName(f1Angle);
+            document.getElementById('f2Val').innerText = getAngleName(f2Angle);
+            document.getElementById('f3Val').innerText = getAngleName(f3Angle);
+            document.getElementById('f1Display').innerText = f1Angle;
+            document.getElementById('f2Display').innerText = f2Angle;
+            document.getElementById('f3Display').innerText = f3Angle;
+            document.getElementById('sourceLabel').innerText = sourcePol === 'U' ? "Unpol." : `|${sourcePol === 'H' ? 'O' : sourcePol}⟩`;
+
+            // Animazione rotazione filtri
+            document.getElementById('f1Grid').style.transform = `rotate(${f1Angle + 90}deg)`;
+            document.getElementById('f2Grid').style.transform = `rotate(${f2Angle + 90}deg)`;
+            document.getElementById('f3Grid').style.transform = `rotate(${f3Angle + 90}deg)`;
+            document.getElementById('f1Arrow').style.transform = `rotate(${f1Angle}deg)`;
+            document.getElementById('f2Arrow').style.transform = `rotate(${f2Angle}deg)`;
+            document.getElementById('f3Arrow').style.transform = `rotate(${f3Angle}deg)`;
+
+            // Visibilità F3
+            const f3Wrapper = document.getElementById('f3Wrapper');
+            const resF3Box = document.getElementById('resF3Box');
+            const beam2 = document.getElementById('beam2');
+            const beam3 = document.getElementById('beam3');
+            
+            if (f3Active) {
+                f3Wrapper.style.opacity = '1';
+                resF3Box.style.opacity = '1';
+                beam2.style.width = '25%';
+                beam3.style.width = 'calc(25% - 64px)';
+            } else {
+                f3Wrapper.style.opacity = '0.3';
+                resF3Box.style.opacity = '0.5';
+                beam2.style.width = 'calc(50% - 64px)';
+                beam3.style.width = '0';
+            }
+
+            // --- Calcoli Quantistici (Legge di Malus) ---
+            let currentAngle = null;
+            let prob1 = 0, prob2 = 0, prob3 = 0;
+            let currentIntensityProb = 1;
+
+            // Filtro 1
+            if (sourcePol === 'U') {
+                prob1 = 0.5;
+                currentAngle = f1Angle;
+                currentIntensityProb = 0.5;
+            } else {
+                let initAngle = getInitialAngle(sourcePol);
+                let deltaRad = (f1Angle - initAngle) * Math.PI / 180;
+                prob1 = roundProb(Math.pow(Math.cos(deltaRad), 2));
+                currentAngle = f1Angle;
+                currentIntensityProb = prob1;
+            }
+
+            // Filtro 2
+            if (currentIntensityProb > 0) {
+                let deltaRad2 = (f2Angle - currentAngle) * Math.PI / 180;
+                prob2 = roundProb(Math.pow(Math.cos(deltaRad2), 2));
+                currentAngle = f2Angle;
+                currentIntensityProb = currentIntensityProb * prob2;
+            }
+
+            // Filtro 3
+            if (f3Active && currentIntensityProb > 0) {
+                let deltaRad3 = (f3Angle - currentAngle) * Math.PI / 180;
+                prob3 = roundProb(Math.pow(Math.cos(deltaRad3), 2));
+                currentIntensityProb = currentIntensityProb * prob3;
+            } else if (!f3Active) {
+                prob3 = 1;
+            }
+
+            // Calcolo Probabilità Totali per F2 e F3 (rispetto all'origine)
+            let totProbF2 = sourcePol === 'U' ? prob1 * prob2 : prob1 * prob2;
+            let totProbF3 = currentIntensityProb;
+
+            // --- Aggiorna UI Raggi e Box Centrali ---
+            document.getElementById('beam0').style.opacity = 1;
+
+            // F1
+            let i1_str = formatIntensity(prob1, sourcePol);
+            if(sourcePol === 'U') i1_str = "I₀ / 2";
+            document.getElementById('resF1Int').innerText = i1_str;
+            document.getElementById('resF1Prob').innerText = prob1;
+            document.getElementById('beam1').style.opacity = prob1 > 0 ? 0.8 : 0;
+            document.getElementById('beam1').style.width = prob1 === 0 ? '0' : '25%';
+
+            // F2
+            let i2_str = formatIntensity(totProbF2, sourcePol);
+            document.getElementById('resF2Int').innerText = i2_str;
+            document.getElementById('resF2Prob').innerText = totProbF2; // Prob congiunta per il box
+            document.getElementById('beam2').style.opacity = totProbF2 > 0 ? 0.6 : 0;
+            if(totProbF2 === 0) document.getElementById('beam2').style.width = '0';
+            else document.getElementById('beam2').style.width = f3Active ? '25%' : 'calc(50% - 64px)';
+
+            // F3
+            let i3_str = "-";
+            let p3_str = "-";
+            if (f3Active) {
+                i3_str = formatIntensity(totProbF3, sourcePol);
+                p3_str = totProbF3; // Prob congiunta per il box
+                document.getElementById('resF3Int').innerText = i3_str;
+                document.getElementById('resF3Prob').innerText = p3_str;
+                document.getElementById('beam3').style.opacity = totProbF3 > 0 ? 0.4 : 0;
+                document.getElementById('beam3').style.width = totProbF3 === 0 ? '0' : 'calc(25% - 64px)';
+            } else {
+                document.getElementById('resF3Int').innerText = "-";
+                document.getElementById('resF3Prob').innerText = "-";
+                document.getElementById('beam3').style.opacity = 0;
+            }
+
+            // --- Logica Tabella Interattiva ---
+            // Rimuovi highlight da tutte le righe
+            document.querySelectorAll('#tableBody tr').forEach(tr => {
+                tr.classList.remove('table-row-highlight');
+            });
+
+            // Cerca se la configurazione attuale corrisponde a uno dei 18 casi
+            if (f3Active) { // La tabella richiede F3 sempre attivo per i casi specificati
+                testCases.forEach(c => {
+                    // sourcePol gestisce l'input select (V, H, 45, U)
+                    // H nella UI equivale a O (orizzontale) nella tabella, lo mappiamo per coerenza. 
+                    // Il select usa 'H', la tabella chiede 'Orizzontale' (angolo 90).
+                    let srcMatch = (c.src === sourcePol) || (c.src === 'H' && sourcePol === 'H');
+                    
+                    if (srcMatch && c.f1 === f1Angle && c.f2 === f2Angle && c.f3 === f3Angle) {
+                        // Trovato! Compila la riga e illuminala
+                        const tr = document.getElementById(`row-${c.id}`);
+                        tr.classList.add('table-row-highlight');
+                        
+                        document.getElementById(`r${c.id}-i1`).innerHTML = `<span class="font-bold text-gray-800">${i1_str}</span>`;
+                        document.getElementById(`r${c.id}-p1`).innerHTML = `<span class="font-bold text-blue-600">${prob1}</span>`;
+                        
+                        document.getElementById(`r${c.id}-i2`).innerHTML = `<span class="font-bold text-gray-800">${i2_str}</span>`;
+                        // La colonna Prob F2 nella tabella chiede la prob totale dopo F2
+                        document.getElementById(`r${c.id}-p2`).innerHTML = `<span class="font-bold text-blue-600">${totProbF2}</span>`;
+                        
+                        document.getElementById(`r${c.id}-i3`).innerHTML = `<span class="font-bold text-gray-800">${i3_str}</span>`;
+                        // La colonna Prob F3 nella tabella chiede la prob totale dopo F3
+                        document.getElementById(`r${c.id}-p3`).innerHTML = `<span class="font-bold text-blue-600">${totProbF3}</span>`;
+                    }
+                });
+            }
+        }
+
+        // Inizializza al caricamento
+        window.addEventListener('DOMContentLoaded', () => {
+            initTable();
+            updateSimulation();
+        });
+    </script>
+</body>
+</html>

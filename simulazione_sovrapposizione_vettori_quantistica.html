@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulazione Interattiva: Sovrapposizione Quantistica e Polarizzazione</title>
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --color-h: #ef4444; /* Rosso per Orizzontale */
+            --color-v: #22c55e; /* Verde per Verticale */
+            --color-w: #3b82f6; /* Blu per Sovrapposizione */
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            max-width: 1000px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            max-width: 1100px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            flex: 1;
+            min-width: 340px;
+            max-width: 540px;
+        }
+
+        .visual-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .canvas-container {
+            position: relative;
+            background: #fafafa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .canvas-label {
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--text-main);
+        }
+
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+            color: #334155;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-mode {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--color-w);
+            color: white;
+            border-color: var(--color-w);
+        }
+
+        label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .value-display {
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--color-w);
+            cursor: pointer;
+        }
+
+        .math-box {
+            background: #f8fafc;
+            border-left: 4px solid var(--color-w);
+            padding: 12px;
+            border-radius: 0 8px 8px 0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .math-state {
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 8px 0;
+            font-weight: bold;
+        }
+
+        .explanation {
+            font-size: 0.9rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .explanation ul {
+            margin-left: 20px;
+            margin-top: 6px;
+        }
+
+        .footer-text {
+            margin-top: 25px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 600px;
+        }
+
+        /* Colori dinamici per i label dei vettori */
+        .lbl-h { color: var(--color-h); }
+        .lbl-v { color: var(--color-v); }
+        .lbl-w { color: var(--color-w); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Principio di Sovrapposizione Quantistica</h1>
+    <p>Applicazione didattica: Vettori di Stato e Polarizzazione Lineare della Luce</p>
+</header>
+
+<div class="container">
+    <!-- PANNELLO GRAFICO -->
+    <div class="panel visual-panel">
+        <div class="canvas-container">
+            <span class="canvas-label">Piano Cartesiano dello Spazio degli Stati (Spazio di Hilbert ℝ²)</span>
+            <canvas id="planeCanvas" width="400" height="400"></canvas>
+        </div>
+        <div class="canvas-container">
+            <span class="canvas-label">Oscillazione del Campo Elettrico (Fascio visto di fronte)</span>
+            <canvas id="animCanvas" width="400" height="160"></canvas>
+        </div>
+    </div>
+
+    <!-- PANNELLO CONTROLLI E MATEMATICA -->
+    <div class="panel controls-panel">
+        <div>
+            <div class="section-title">Modalità di Controllo dello Stato</div>
+            <div class="control-mode">
+                <button id="btnLibero" class="mode-btn active" onclick="setMode('libero')">Somma Libera (W = H + V)</button>
+                <button id="btnQuantistico" class="mode-btn" onclick="setMode('quantistico')">Stato Normalizzato (|W⟩ = 1)</button>
+            </div>
+        </div>
+
+        <div class="section-title">Parametri dei Vettori</div>
+        
+        <!-- Cursori per Modalità Libera -->
+        <div id="controlsLibero" class="control-group">
+            <div class="control-group">
+                <label>Componente Orizzontale <span class="lbl-h">a (su |H⟩)</span>: <span id="valA" class="value-display">1.00</span></label>
+                <input type="range" id="sliderA" min="-1.5" max="1.5" step="0.01" value="1.00" oninput="updateFromSliders()">
+            </div>
+            <br>
+            <div class="control-group">
+                <label>Componente Verticale <span class="lbl-v">b (su |V⟩)</span>: <span id="valB" class="value-display">0.75</span></label>
+                <input type="range" id="sliderB" min="-1.5" max="1.5" step="0.01" value="0.75" oninput="updateFromSliders()">
+            </div>
+        </div>
+
+        <!-- Cursore per Modalità Quantistica -->
+        <div id="controlsQuantistico" class="control-group" style="display: none;">
+            <div class="control-group">
+                <label>Angolo di Polarizzazione <span class="lbl-w">θ (Gradi)</span>: <span id="valTheta" class="value-display">36°</span></label>
+                <input type="range" id="sliderTheta" min="0" max="360" step="1" value="36" oninput="updateFromAngle()">
+            </div>
+        </div>
+
+        <div class="section-title">Rappresentazione Matematica</div>
+        <div class="math-box">
+            <div style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">Equazione di Stato:</div>
+            <div id="formulaStato" class="math-state">|W⟩ = 1.00|H⟩ + 0.75|V⟩</div>
+            <div style="font-size: 0.9rem; margin-top: 5px;">
+                • Lunghezza (Norma) <span class="lbl-w">|W|</span>: <span id="valNorma" style="font-weight:bold;">1.25</span><br>
+                • Angolo Geometrico <span class="lbl-w">θ</span>: <span id="valAngoloDeg" style="font-weight:bold;">36.9°</span>
+            </div>
+        </div>
+
+        <div class="section-title">Interpretazione Fisica</div>
+        <div class="explanation">
+            <p>I vettori mutuamente ortogonali <span class="lbl-h" style="font-weight:bold;">|H⟩</span> e <span class="lbl-v" style="font-weight:bold;">|V⟩</span> rappresentano la base dello spazio degli stati del sistema (polarizzazione orizzontale e verticale).</p>
+            <p style="margin-top: 6px;">Secondo il <strong>Principio di Sovrapposizione</strong>, il vettore risultante <span class="lbl-w" style="font-weight:bold;">|W⟩</span> descrive un nuovo stato fisico perfettamente ammesso:</p>
+            <ul style="margin-bottom: 6px;">
+                <li>Nella <em>somma generica</em>, i coefficienti cambiano l'intensità complessiva del campo.</li>
+                <li>Nel <em>caso quantistico reale</em> (Stato Normalizzato), la lunghezza del vettore è fissa a 1. I quadrati dei coefficienti rappresentano le probabilità di transizione: <span class="lbl-h">P(H) = a²</span> e <span class="lbl-v">P(V) = b²</span>, con <span style="font-weight:bold;">a² + b² = 1</span>.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="footer-text">
+    Sviluppato per le classi quarte del Liceo Scientifico - Strumento di supporto alla didattica della transizione dalla fisica classica alla meccanica quantistica attraverso la geometria vettoriale cartesiana.
+</div>
+
+<script>
+    const planeCanvas = document.getElementById('planeCanvas');
+    const ctxPlane = planeCanvas.getContext('2d');
+    const animCanvas = document.getElementById('animCanvas');
+    const ctxAnim = animCanvas.getContext('2d');
+
+    // Stato dell'applicazione
+    let mode = 'libero'; // 'libero' o 'quantistico'
+    let state = {
+        a: 1.00,
+        b: 0.75,
+        theta: 36.87, // in gradi
+        norm: 1.25
+    };
+
+    // Parametri di animazione
+    let animationTime = 0;
+
+    function setMode(newMode) {
+        mode = newMode;
+        document.getElementById('btnLibero').classList.toggle('active', mode === 'libero');
+        document.getElementById('btnQuantistico').classList.toggle('active', mode === 'quantistico');
+        
+        document.getElementById('controlsLibero').style.display = mode === 'libero' ? 'flex' : 'none';
+        document.getElementById('controlsQuantistico').style.display = mode === 'quantistico' ? 'flex' : 'none';
+
+        if (mode === 'quantistico') {
+            // Forza la normalizzazione dello stato attuale
+            state.theta = parseInt(document.getElementById('sliderTheta').value);
+            updateFromAngle();
+        } else {
+            // Ripristina i valori dai cursori liberi
+            updateFromSliders();
+        }
+    }
+
+    function updateFromSliders() {
+        state.a = parseFloat(document.getElementById('sliderA').value);
+        state.b = parseFloat(document.getElementById('sliderB').value);
+        state.norm = Math.sqrt(state.a * state.a + state.b * state.b);
+        
+        let rad = Math.atan2(state.b, state.a);
+        state.theta = (rad >= 0 ? rad : (rad + 2 * Math.PI)) * (180 / Math.PI);
+
+        document.getElementById('valA').innerText = state.a.toFixed(2);
+        document.getElementById('valB').innerText = state.b.toFixed(2);
+        
+        updateUI();
+    }
+
+    function updateFromAngle() {
+        state.theta = parseFloat(document.getElementById('sliderTheta').value);
+        let rad = state.theta * (Math.PI / 180);
+        state.a = Math.cos(rad);
+        state.b = Math.sin(rad);
+        state.norm = 1.0;
+
+        document.getElementById('valTheta').innerText = Math.round(state.theta) + "°";
+        
+        updateUI();
+    }
+
+    function updateUI() {
+        // Aggiorna stringa matematica
+        const sign = state.b >= 0 ? " + " : " - ";
+        const absB = Math.abs(state.b).toFixed(2);
+        document.getElementById('formulaStato').innerHTML = `|W⟩ = ${state.a.toFixed(2)}|H⟩${sign}${absB}|V⟩`;
+        
+        // Aggiorna dati numerici sussidiari
+        document.getElementById('valNorma').innerText = state.norm.toFixed(3);
+        document.getElementById('valAngoloDeg').innerText = state.theta.toFixed(1) + "°";
+    }
+
+    // Funzioni di disegno sul Piano Cartesiano
+    function drawCartesianPlane() {
+        const width = planeCanvas.width;
+        const height = planeCanvas.height;
+        ctxPlane.clearRect(0, 0, width, height);
+
+        const originX = width / 2;
+        const originY = height / 2;
+        
+        // Scala: 1 unità = 110 pixel
+        const scale = 110;
+
+        // Disegno Griglia Sfondo
+        ctxPlane.strokeStyle = '#e2e8f0';
+        ctxPlane.lineWidth = 1;
+        for (let x = -2; x <= 2; x += 0.5) {
+            if (x === 0) continue;
+            ctxPlane.beginPath();
+            ctxPlane.moveTo(originX + x * scale, 0);
+            ctxPlane.lineTo(originX + x * scale, height);
+            ctxPlane.stroke();
+        }
+        for (let y = -2; y <= 2; y += 0.5) {
+            if (y === 0) continue;
+            ctxPlane.beginPath();
+            ctxPlane.moveTo(0, originY - y * scale);
+            ctxPlane.lineTo(width, originY - y * scale);
+            ctxPlane.stroke();
+        }
+
+        // Assi Principali X e Y
+        ctxPlane.strokeStyle = '#334155';
+        ctxPlane.lineWidth = 2;
+        
+        // Asse X (|H>)
+        ctxPlane.beginPath();
+        ctxPlane.moveTo(10, originY);
+        ctxPlane.lineTo(width - 10, originY);
+        ctxPlane.stroke();
+        
+        // Asse Y (|V>)
+        ctxPlane.beginPath();
+        ctxPlane.moveTo(originX, 10);
+        ctxPlane.lineTo(originX, height - 10);
+        ctxPlane.stroke();
+
+        // Frecce degli Assi e Etichette di Base Fisse
+        ctxPlane.fillStyle = '#334155';
+        ctxPlane.font = 'bold 12px sans-serif';
+        ctxPlane.fillText('|H⟩ (Orizzontale)', width - 105, originY - 8);
+        ctxPlane.fillText('|V⟩ (Verticale)', originX + 8, 22);
+
+        // Disegno Tacche Unitarie (+1 e -1)
+        ctxPlane.font = '10px monospace';
+        ctxPlane.fillText('1.0', originX + scale - 8, originY + 14);
+        ctxPlane.fillText('-1.0', originX - scale - 12, originY + 14);
+        ctxPlane.fillText('1.0', originX + 6, originY - scale + 4);
+        ctxPlane.fillText('-1.0', originX + 6, originY + scale + 4);
+
+        // Componenti dei vettori dell'utente
+        const targetX = originX + state.a * scale;
+        const targetY = originY - state.b * scale; // Inversione asse Y dello schermo
+
+        // Linee tratteggiate di proiezione (Regola del Parallelogramma)
+        ctxPlane.strokeStyle = '#94a3b8';
+        ctxPlane.lineWidth = 1.5;
+        ctxPlane.setLineDash([4, 4]);
+        
+        // Proezione su X
+        ctxPlane.beginPath();
+        ctxPlane.moveTo(targetX, targetY);
+        ctxPlane.lineTo(targetX, originY);
+        ctxPlane.stroke();
+        
+        // Proiezione su Y
+        ctxPlane.beginPath();
+        ctxPlane.moveTo(targetX, targetY);
+        ctxPlane.lineTo(originX, targetY);
+        ctxPlane.stroke();
+        
+        ctxPlane.setLineDash([]); // Ripristina linea continua
+
+        // Disegno Vettore H (Orizzontale, Rosso)
+        drawArrow(ctxPlane, originX, originY, originX + state.a * scale, originY, '#ef4444', 3);
+        
+        // Disegno Vettore V (Verticale, Verde)
+        drawArrow(ctxPlane, originX, originY, originX, originY - state.b * scale, '#22c55e', 3);
+
+        // Disegno Circonferenza Unitaria se in Modalità Quantistica (Norma = 1)
+        if (mode === 'quantistico') {
+            ctxPlane.strokeStyle = 'rgba(59, 130, 246, 0.25)';
+            ctxPlane.lineWidth = 1.5;
+            ctxPlane.beginPath();
+            ctxPlane.arc(originX, originY, scale, 0, 2 * Math.PI);
+            ctxPlane.stroke();
+        }
+
+        // Disegno Vettore Risultante W (Sovrapposizione, Blu)
+        drawArrow(ctxPlane, originX, originY, targetX, targetY, '#3b82f6', 4);
+        
+        // Etichetta del vettore W
+        ctxPlane.fillStyle = '#1e3a8a';
+        ctxPlane.font = 'bold 14px sans-serif';
+        ctxPlane.fillText('|W⟩', targetX + (state.a >= 0 ? 8 : -22), targetY + (state.b >= 0 ? -6 : 14));
+    }
+
+    // Funzione helper per disegnare frecce grafiche ben proporzionate
+    function drawArrow(context, fromx, fromy, tox, toy, color, thickness) {
+        const headlen = 10; // Lunghezza della punta della freccia
+        const dx = tox - fromx;
+        const dy = toy - fromy;
+        const angle = Math.atan2(dy, dx);
+        
+        context.strokeStyle = color;
+        context.lineWidth = thickness;
+        context.beginPath();
+        context.moveTo(fromx, fromy);
+        context.lineTo(tox, toy);
+        context.stroke();
+        
+        // Se il vettore è quasi nullo, evita di disegnare una punta gigante
+        if (Math.sqrt(dx*dx + dy*dy) > 5) {
+            context.fillStyle = color;
+            context.beginPath();
+            context.moveTo(tox, toy);
+            context.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+            context.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+            context.closePath();
+            context.fill();
+        }
+    }
+
+    // Animazione dinamica del fronte d'onda oscillante (Polarizzazione risultante)
+    function drawWaveAnimation() {
+        const width = animCanvas.width;
+        const height = animCanvas.height;
+        ctxAnim.clearRect(0, 0, width, height);
+
+        const cx = width / 2;
+        const cy = height / 2;
+
+        // Disegna assi di riferimento veloci nel box di animazione
+        ctxAnim.strokeStyle = '#f1f5f9';
+        ctxAnim.lineWidth = 1;
+        ctxAnim.beginPath(); ctxAnim.moveTo(0, cy); ctxAnim.lineTo(width, cy); ctxAnim.stroke();
+        ctxAnim.beginPath(); ctxAnim.moveTo(cx, 0); ctxAnim.lineTo(cx, height); ctxAnim.stroke();
+
+        // Calcola l'oscillazione armonica nel tempo: sin(omega * t)
+        // Normalizziamo la direzione di oscillazione in base ai componenti a e b attuali
+        const factor = Math.sin(animationTime);
+        
+        // Scala visiva adatta al box piccolo
+        const drawScale = 50;
+        
+        // Calcoliamo lo spostamento massimo istantaneo dell'estremità del campo elettrico
+        let extX, extY;
+        if (mode === 'quantistico') {
+            extX = state.a * drawScale * factor;
+            extY = state.b * drawScale * factor;
+        } else {
+            // Per evitare che esca dallo schermo se la norma è grande, normalizziamo la forma d'onda visiva ma scalata alla norma relativa
+            const maxVal = Math.max(Math.abs(state.a), Math.abs(state.b), 0.1);
+            extX = (state.a / maxVal) * drawScale * factor;
+            extY = (state.b / maxVal) * drawScale * factor;
+        }
+
+        // Disegno la linea di oscillazione completa (il cammino della polarizzazione)
+        ctxAnim.strokeStyle = '#e2e8f0';
+        ctxAnim.lineWidth = 2;
+        ctxAnim.setLineDash([2, 2]);
+        ctxAnim.beginPath();
+        let maxExtX, maxExtY;
+        if (mode === 'quantistico') {
+            maxExtX = state.a * drawScale;
+            maxExtY = state.b * drawScale;
+        } else {
+            const maxVal = Math.max(Math.abs(state.a), Math.abs(state.b), 0.1);
+            maxExtX = (state.a / maxVal) * drawScale;
+            maxExtY = (state.b / maxVal) * drawScale;
+        }
+        ctxAnim.moveTo(cx - maxExtX, cy + maxExtY);
+        ctxAnim.lineTo(cx + maxExtX, cy - maxExtY);
+        ctxAnim.stroke();
+        ctxAnim.setLineDash([]);
+
+        // Disegno del vettore Campo Elettrico istantaneo E(t) (colore Blu brillante)
+        drawArrow(ctxAnim, cx, cy, cx + extX, cy - extY, '#3b82f6', 3);
+        
+        // Cerchietto di tracciamento sulla punta
+        ctxAnim.fillStyle = '#ef4444';
+        ctxAnim.beginPath();
+        ctxAnim.arc(cx + extX, cy - extY, 4, 0, 2 * Math.PI);
+        ctxAnim.fill();
+
+        // Incremento del tempo per il frame successivo
+        animationTime += 0.05;
+    }
+
+    // Loop principale di rendering dell'interfaccia grafica
+    function mainLoop() {
+        drawCartesianPlane();
+        drawWaveAnimation();
+        requestAnimationFrame(mainLoop);
+    }
+
+    // Avvio e inizializzazione dei listener
+    updateFromSliders();
+    mainLoop();
+</script>
+
+</body>
+</html>

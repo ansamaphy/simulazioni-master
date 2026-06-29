@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulatore Quantistico: Legge di Malus</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; }
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #eef2f3;
+            border-radius: 8px;
+        }
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 45%;
+        }
+        input[type="range"] { width: 100%; }
+        .stats {
+            font-size: 1.2em;
+            margin: 20px 0;
+            padding: 15px;
+            background: #e8f4f8;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        .formula {
+            font-size: 1.3em;
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 10px;
+            border: 1px solid #ffeeba;
+        }
+        canvas {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+        .counters {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            font-size: 1.1em;
+        }
+        .passato { color: #27ae60; font-weight: bold; }
+        .assorbito { color: #c0392b; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Simulatore Quantistico: Legge di Malus</h1>
+    
+    <div class="formula" id="formula-display">
+        P = cos²(0°) = 1.00 (100%)
+    </div>
+
+    <div class="controls">
+        <div class="slider-group">
+            <label for="theta"><strong>Angolo del Fotone (θ): <span id="theta-val">0</span>°</strong></label>
+            <input type="range" id="theta" min="0" max="180" value="0">
+        </div>
+        <div class="slider-group">
+            <label for="phi"><strong>Angolo del Filtro (φ): <span id="phi-val">45</span>°</strong></label>
+            <input type="range" id="phi" min="0" max="180" value="45">
+        </div>
+    </div>
+
+    <canvas id="simCanvas" width="800" height="400"></canvas>
+
+    <div class="counters">
+        <div>Fotoni Inviati: <span id="total-count">0</span></div>
+        <div class="passato">Trasmessi: <span id="pass-count">0</span></div>
+        <div class="assorbito">Assorbiti: <span id="block-count">0</span></div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const thetaSlider = document.getElementById('theta');
+    const phiSlider = document.getElementById('phi');
+    const thetaVal = document.getElementById('theta-val');
+    const phiVal = document.getElementById('phi-val');
+    const formulaDisplay = document.getElementById('formula-display');
+    
+    // Contatori statistici
+    let totalPhotons = 0;
+    let passedPhotons = 0;
+    let blockedPhotons = 0;
+    let probability = 0;
+
+    // Array per l'animazione delle particelle
+    let particles = [];
+
+    function updateCalculations() {
+        const theta = parseInt(thetaSlider.value);
+        const phi = parseInt(phiSlider.value);
+        thetaVal.textContent = theta;
+        phiVal.textContent = phi;
+
+        const diff = Math.abs(theta - phi);
+        const rad = diff * Math.PI / 180;
+        probability = Math.pow(Math.cos(rad), 2);
+
+        formulaDisplay.innerHTML = `P = cos²(|${theta}° - ${phi}°|) = cos²(${diff}°) = <strong>${probability.toFixed(2)}</strong> (${(probability * 100).toFixed(0)}%)`;
+        
+        // Reset contatori quando si cambiano i parametri
+        totalPhotons = 0;
+        passedPhotons = 0;
+        blockedPhotons = 0;
+        particles = [];
+        updateCounters();
+    }
+
+    function updateCounters() {
+        document.getElementById('total-count').textContent = totalPhotons;
+        document.getElementById('pass-count').textContent = passedPhotons;
+        document.getElementById('block-count').textContent = blockedPhotons;
+    }
+
+    class Particle {
+        constructor() {
+            this.x = 450; // Partono dalla zona centrale-destra (inizio animazione)
+            this.y = 200 + (Math.random() * 100 - 50); // Diffusione verticale
+            this.speed = 3 + Math.random() * 2;
+            this.state = 'approaching'; // approaching, passed, blocked
+            this.marked = false;
+        }
+
+        update() {
+            if (this.state === 'approaching') {
+                this.x += this.speed;
+                // Posizione del filtro nella canvas
+                if (this.x >= 600) { 
+                    this.state = Math.random() < probability ? 'passed' : 'blocked';
+                    if (!this.marked) {
+                        totalPhotons++;
+                        if (this.state === 'passed') passedPhotons++;
+                        else blockedPhotons++;
+                        this.marked = true;
+                        updateCounters();
+                    }
+                }
+            } else if (this.state === 'passed') {
+                this.x += this.speed;
+            } else if (this.state === 'blocked') {
+                // Effetto dissolvenza per i fotoni assorbiti
+                this.speed = 0; 
+                this.alpha = (this.alpha || 1) - 0.05;
+            }
+        }
+
+        draw(ctx) {
+            if (this.state === 'blocked' && this.alpha <= 0) return;
+            
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+            
+            if (this.state === 'approaching') {
+                ctx.fillStyle = '#3498db'; // Blu (Fotone in arrivo)
+            } else if (this.state === 'passed') {
+                ctx.fillStyle = '#27ae60'; // Verde (Trasmesso)
+            } else if (this.state === 'blocked') {
+                ctx.fillStyle = `rgba(192, 57, 43, ${this.alpha})`; // Rosso in dissolvenza (Assorbito)
+            }
+            
+            ctx.fill();
+            ctx.closePath();
+        }
+    }
+
+    function drawVectors() {
+        const cx = 200;
+        const cy = 200;
+        const radius = 120;
+        const theta = parseInt(thetaSlider.value);
+        const phi = parseInt(phiSlider.value);
+
+        // Disegna cerchio base
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = '#bdc3c7';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Assi X e Y
+        ctx.beginPath();
+        ctx.moveTo(cx - radius - 20, cy);
+        ctx.lineTo(cx + radius + 20, cy);
+        ctx.moveTo(cx, cy - radius - 20);
+        ctx.lineTo(cx, cy + radius + 20);
+        ctx.strokeStyle = '#ecf0f1';
+        ctx.stroke();
+
+        // Disegna asse del Filtro (φ)
+        const radPhi = -phi * Math.PI / 180; // Negativo per far ruotare in senso antiorario su Canvas
+        ctx.beginPath();
+        ctx.moveTo(cx - Math.cos(radPhi)*radius, cy - Math.sin(radPhi)*radius);
+        ctx.lineTo(cx + Math.cos(radPhi)*radius, cy + Math.sin(radPhi)*radius);
+        ctx.strokeStyle = '#7f8c8d';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Etichetta Filtro
+        ctx.fillStyle = '#7f8c8d';
+        ctx.font = '14px Arial';
+        ctx.fillText('Asse Filtro (φ)', cx + Math.cos(radPhi)*(radius+10), cy + Math.sin(radPhi)*(radius+10));
+
+        // Disegna vettore Fotone (θ)
+        const radTheta = -theta * Math.PI / 180;
+        ctx.beginPath();
+        ctx.moveTo(cx - Math.cos(radTheta)*radius, cy - Math.sin(radTheta)*radius);
+        ctx.lineTo(cx + Math.cos(radTheta)*radius, cy + Math.sin(radTheta)*radius);
+        ctx.strokeStyle = '#2980b9';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Punte freccia Fotone
+        drawArrowhead(cx + Math.cos(radTheta)*radius, cy + Math.sin(radTheta)*radius, radTheta, '#2980b9');
+        drawArrowhead(cx - Math.cos(radTheta)*radius, cy - Math.sin(radTheta)*radius, radTheta + Math.PI, '#2980b9');
+
+        ctx.fillStyle = '#2980b9';
+        ctx.fillText('Fotone (θ)', cx + Math.cos(radTheta)*(radius-30), cy + Math.sin(radTheta)*(radius-30));
+    }
+
+    function drawArrowhead(x, y, angle, color) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - 10 * Math.cos(angle - Math.PI/6), y - 10 * Math.sin(angle - Math.PI/6));
+        ctx.lineTo(x - 10 * Math.cos(angle + Math.PI/6), y - 10 * Math.sin(angle + Math.PI/6));
+        ctx.lineTo(x, y);
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
+
+    function drawFilterSimulation() {
+        // Linea di divisione visuale
+        ctx.beginPath();
+        ctx.moveTo(400, 20);
+        ctx.lineTo(400, 380);
+        ctx.strokeStyle = '#ecf0f1';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Rappresentazione del filtro fisico
+        ctx.fillStyle = '#95a5a6';
+        ctx.fillRect(595, 100, 10, 200);
+        ctx.fillStyle = '#34495e';
+        ctx.font = '16px Arial';
+        ctx.fillText('Filtro Polarizzatore', 540, 80);
+
+        // Generazione nuove particelle
+        if (Math.random() < 0.1) { // Frequenza di sparo dei fotoni
+            particles.push(new Particle());
+        }
+
+        // Aggiorna e disegna particelle
+        for (let i = particles.length - 1; i >= 0; i--) {
+            particles[i].update();
+            particles[i].draw(ctx);
+            // Rimuovi particelle uscite dallo schermo
+            if (particles[i].x > 800 || (particles[i].state === 'blocked' && particles[i].alpha <= 0)) {
+                particles.splice(i, 1);
+            }
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        drawVectors();
+        drawFilterSimulation();
+        
+        requestAnimationFrame(animate);
+    }
+
+    // Event Listeners
+    thetaSlider.addEventListener('input', updateCalculations);
+    phiSlider.addEventListener('input', updateCalculations);
+
+    // Inizializzazione
+    updateCalculations();
+    animate();
+</script>
+
+</body>
+</html>

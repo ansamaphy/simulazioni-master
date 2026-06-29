@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulatore Bra-Ket</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+        }
+        /* Tabella */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        th {
+            color: #666;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+        /* Plot Area */
+        .plot-section {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            border-top: 1px dashed #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        canvas {
+            background-color: transparent;
+        }
+        /* Legenda */
+        .legend {
+            position: absolute;
+            left: 0;
+            bottom: 20px;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .dot {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        /* Tooltip fluttuante */
+        .tooltip {
+            position: absolute;
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            pointer-events: none;
+            text-align: center;
+            line-height: 1.4;
+        }
+        /* Probabilità Display */
+        .prob-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .prob-label {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        .prob-value {
+            font-size: 24px;
+            font-weight: 500;
+        }
+        /* Controlli */
+        .controls-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .control-label {
+            font-size: 14px;
+            min-width: 120px;
+        }
+        .slider-min {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            flex: 1;
+            accent-color: #333;
+        }
+        .value-pill {
+            background: #f0f0f0;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            min-width: 30px;
+            text-align: center;
+        }
+        /* Pulsanti */
+        .buttons-container {
+            display: flex;
+            gap: 20px;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #e4e4e4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <!-- Tabella Dati -->
+    <table>
+        <thead>
+            <tr>
+                <th>Componente Algebrica</th>
+                <th>Valore / Notazione</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Ket |ψ⟩ (Stato)</td>
+                <td id="ket-val">[0.91, 0.42]^T</td>
+            </tr>
+            <tr>
+                <td>Bra ⟨φ| (Filtro)</td>
+                <td id="bra-val">[0.00, 1.00]</td>
+            </tr>
+            <tr>
+                <td>Ampiezza ⟨φ|ψ⟩</td>
+                <td id="amp-val">0.423</td>
+            </tr>
+            <tr>
+                <td>Probabilità |⟨φ|ψ⟩|²</td>
+                <td id="prob-val-table">17.9%</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Area Grafico -->
+    <div class="plot-section">
+        <canvas id="vectorPlot" width="400" height="300"></canvas>
+        
+        <div class="tooltip" id="plot-tooltip" style="top: 80px; left: 45%;">
+            θ = <span id="tooltip-theta">25</span>°<br>
+            ⟨φ|ψ⟩ = <span id="tooltip-amp">0.42</span>
+        </div>
+
+        <div class="legend">
+            <div><span class="dot" style="background:#1a73e8;"></span>Stato |ψ⟩</div>
+            <div><span class="dot" style="background:#1e8e3e;"></span>Filtro ⟨φ|</div>
+            <div><span class="dot" style="background:#9aa0a6;"></span>Proiezione</div>
+        </div>
+    </div>
+
+    <!-- Display Probabilità -->
+    <div class="prob-display">
+        <div class="prob-label">Probabilità di Trasmissione</div>
+        <div class="prob-value" id="prob-val-main">17.9%</div>
+    </div>
+
+    <!-- Sliders -->
+    <div class="controls-container">
+        <div class="control-group">
+            <div class="control-label">Angolo Stato (θ)</div>
+            <div class="slider-min">0</div>
+            <input type="range" id="slider-theta" min="0" max="90" value="25">
+            <div class="value-pill" id="pill-theta">25</div>
+        </div>
+        <div class="control-group">
+            <div class="control-label">Angolo Filtro (φ)</div>
+            <div class="slider-min">0</div>
+            <input type="range" id="slider-phi" min="0" max="90" value="90">
+            <div class="value-pill" id="pill-phi">90</div>
+        </div>
+    </div>
+
+    <!-- Pulsanti -->
+    <div class="buttons-container">
+        <button onclick="setFilterAngle(0)">0° (Oriz.)</button>
+        <button onclick="setFilterAngle(90)">90° (Vert.)</button>
+    </div>
+
+</div>
+
+<script>
+    const canvas = document.getElementById('vectorPlot');
+    const ctx = canvas.getContext('2d');
+    
+    // Elementi DOM
+    const sliderTheta = document.getElementById('slider-theta');
+    const sliderPhi = document.getElementById('slider-phi');
+    const pillTheta = document.getElementById('pill-theta');
+    const pillPhi = document.getElementById('pill-phi');
+    const tooltip = document.getElementById('plot-tooltip');
+    
+    // Funzione calcolo e aggiornamento UI
+    function updateSimulation() {
+        const theta = parseInt(sliderTheta.value);
+        const phi = parseInt(sliderPhi.value);
+        
+        // Aggiorna Pills
+        pillTheta.textContent = theta;
+        pillPhi.textContent = phi;
+        
+        // Calcoli Matematici
+        const thetaRad = theta * Math.PI / 180;
+        const phiRad = phi * Math.PI / 180;
+        
+        const ketX = Math.cos(thetaRad);
+        const ketY = Math.sin(thetaRad);
+        const braX = Math.cos(phiRad);
+        const braY = Math.sin(phiRad);
+        
+        const ampiezza = Math.cos(thetaRad - phiRad);
+        const prob = Math.pow(ampiezza, 2);
+        
+        // Aggiorna Tabella
+        document.getElementById('ket-val').textContent = `[${ketX.toFixed(2)}, ${ketY.toFixed(2)}]^T`;
+        document.getElementById('bra-val').textContent = `[${braX.toFixed(2)}, ${braY.toFixed(2)}]`;
+        document.getElementById('amp-val').textContent = ampiezza.toFixed(3);
+        
+        const probStr = (prob * 100).toFixed(1) + '%';
+        document.getElementById('prob-val-table').textContent = probStr;
+        document.getElementById('prob-val-main').textContent = probStr;
+        
+        // Aggiorna Tooltip
+        document.getElementById('tooltip-theta').textContent = theta;
+        document.getElementById('tooltip-amp').textContent = ampiezza.toFixed(2);
+        
+        // Disegna Grafico
+        drawPlot(thetaRad, phiRad, ampiezza);
+    }
+    
+    // Funzione disegno su Canvas
+    function drawPlot(thetaRad, phiRad, ampiezza) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const R = 80; // Raggio cerchio unitario
+        
+        // Disegna assi
+        ctx.beginPath();
+        ctx.moveTo(cx, 20); ctx.lineTo(cx, canvas.height - 20);
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Disegna cerchio
+        ctx.beginPath();
+        ctx.arc(cx, cy, R, 0, Math.PI * 2);
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.stroke();
+        
+        // Calcolo coordinate vettori (y invertita per il canvas)
+        const stateX = cx + Math.cos(thetaRad) * R;
+        const stateY = cy - Math.sin(thetaRad) * R;
+        const filterX = cx + Math.cos(phiRad) * R;
+        const filterY = cy - Math.sin(phiRad) * R;
+        
+        // Calcolo coordinate proiezione
+        const projLen = ampiezza * R;
+        const projX = cx + Math.cos(phiRad) * projLen;
+        const projY = cy - Math.sin(phiRad) * projLen;
+        
+        // Disegna linea di Proiezione (tratteggiata grigia)
+        ctx.beginPath();
+        ctx.moveTo(stateX, stateY);
+        ctx.lineTo(projX, projY);
+        ctx.strokeStyle = '#9aa0a6';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.setLineDash([]); // reset
+        
+        // Disegna Vettore Filtro (Verde)
+        drawArrow(cx, cy, filterX, filterY, '#1e8e3e');
+        
+        // Disegna Vettore Stato (Blu)
+        drawArrow(cx, cy, stateX, stateY, '#1a73e8');
+        
+        // Etichette vettori
+        ctx.font = "12px sans-serif";
+        ctx.fillStyle = '#1e8e3e';
+        ctx.fillText("⟨φ|", filterX - 8, filterY - 10);
+        ctx.fillStyle = '#1a73e8';
+        ctx.fillText("|ψ⟩", stateX + 8, stateY + 5);
+        
+        // Posiziona il tooltip HTML a metà strada
+        tooltip.style.left = (projX - 30) + 'px';
+        tooltip.style.top = (projY - 45) + 'px';
+    }
+    
+    // Helper per disegnare frecce
+    function drawArrow(fromX, fromY, toX, toY, color) {
+        const headlen = 8;
+        const dx = toX - fromX;
+        const dy = toY - fromY;
+        const angle = Math.atan2(dy, dx);
+        
+        ctx.beginPath();
+        ctx.moveTo(fromX, fromY);
+        ctx.lineTo(toX, toY);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(toX, toY);
+        ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI/6), toY - headlen * Math.sin(angle - Math.PI/6));
+        ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI/6), toY - headlen * Math.sin(angle + Math.PI/6));
+        ctx.lineTo(toX, toY);
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
+    
+    // Funzione collegata ai bottoni
+    function setFilterAngle(val) {
+        sliderPhi.value = val;
+        updateSimulation();
+    }
+    
+    // Event Listeners
+    sliderTheta.addEventListener('input', updateSimulation);
+    sliderPhi.addEventListener('input', updateSimulation);
+    
+    // Init
+    updateSimulation();
+</script>
+
+</body>
+</html>
